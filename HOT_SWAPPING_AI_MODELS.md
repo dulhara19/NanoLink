@@ -1,5 +1,6 @@
-# Hot-swapping AI models at runtime (zero downtime): learning notes
+test change
 
+# Hot-swapping AI models at runtime (zero downtime): learning notes
 ## 1) What “hot-swapping a model” really means
 
 In a real-time AI system, **inference requests are continuously arriving** (frames in a game, sensor ticks in robotics, streaming analytics). “Hot-swapping” means you can **replace the currently-serving model** (weights + execution graph + pre/post-processing configuration) **while requests keep flowing**, without:

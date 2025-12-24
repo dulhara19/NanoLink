@@ -1,4 +1,3 @@
-test change
 
 # Hot-swapping AI models at runtime (zero downtime): learning notes
 ## 1) What “hot-swapping a model” really means

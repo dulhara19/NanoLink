@@ -77,6 +77,52 @@ flowchart LR
 
 Key point: after initialization, the hot path is “just memory” + a handful of atomics.
 
+## 5.1) One message, end-to-end (sequence diagrams)
+
+### Producer `TryWrite` (happy path, no wrap)
+
+```mermaid
+sequenceDiagram
+  participant P as ProducerThread
+  participant H as SharedHeader
+  participant R as RingBytes
+
+  P->>H: VolatileRead(HeadBytes)
+  P->>H: VolatileRead(TailBytes)
+  note over P: Compute free space and offset
+  P->>R: Write RecordHeader (Length = -payloadLen)
+  P->>R: Write PayloadBytes
+  P->>R: VolatileWrite(Length = payloadLen)
+  P->>H: VolatileWrite(HeadBytes += totalRecordBytes)
+```
+
+### Consumer `TryRead` (happy path, no wrap)
+
+```mermaid
+sequenceDiagram
+  participant C as ConsumerThread
+  participant H as SharedHeader
+  participant R as RingBytes
+
+  C->>H: VolatileRead(TailBytes)
+  C->>H: VolatileRead(HeadBytes)
+  note over C: If TailBytes == HeadBytes => empty
+  C->>R: VolatileRead(Length)
+  note over C: If Length < 0 => in-progress; retry later
+  C->>R: Read Type/Timestamp/Seq + PayloadBytes
+  C->>H: VolatileWrite(TailBytes += totalRecordBytes)
+```
+
+### Why there are two “publish points”
+There are two separate moments when data becomes safe to consume:
+
+1. **Record commit**: `Length` flips from negative to positive.\n
+   - This ensures the consumer won’t read a partially-copied payload.\n
+2. **Ring publish**: `HeadBytes` advances.\n
+   - This tells the consumer there’s a new record available.\n
+
+In this implementation, both are done with `Volatile.Write` (release semantics).
+
 ## 6) The shared memory layout (bytes on the wire)
 The memory-mapped region looks like this:
 

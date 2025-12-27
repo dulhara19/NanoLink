@@ -266,6 +266,24 @@ Run producer (terminal 2):
 - **NUMA / core placement**: can strongly affect p99 latency (cache migration).
 - **GC**: even with `ArrayPool`, allocations elsewhere can introduce latency spikes.
 
+## 13.1) Exercises (to solidify understanding)
+Try these in Study Mode (and/or by editing the code locally):
+
+1. **Trace a wrap**: choose a tiny `--cap` (e.g., 4096) and `--max` close to cap/2. Explain when and why the wrap marker appears.
+2. **Change the drop policy** (design only): how would “drop oldest” work? Which counter would you advance?
+3. **Prove the invariant**: show why `0 <= head-tail <= cap` holds in SPSC (and what breaks it).
+4. **Memory ordering thought experiment**: what bug could happen if `HeadBytes` were written before payload copy?
+5. **Sizing**: given msg rate and size distribution, estimate required `--cap` to keep drops near zero under bursts.
+
+## 13.2) Glossary (quick terms)
+- **IPC**: Inter-process communication.
+- **Shared memory**: two processes map the same physical pages; reads/writes are loads/stores.
+- **Ring buffer**: fixed-size circular queue using wrap-around addressing.
+- **SPSC**: single producer, single consumer (simplifies correctness and performance).
+- **Acquire/Release**: memory ordering rules ensuring one thread’s writes become visible to another in the right order.
+- **Two-phase commit (in this repo)**: mark record incomplete (negative length), write payload, then commit (positive length).
+- **False sharing**: two cores write different variables on the same cache line, causing cache ping-pong.
+
 ## 14) Suggested Study Mode question prompts (copy/paste)
 Use these with Study Mode to go step-by-step:
 - “Explain how `MemoryMappedFile` maps memory across processes on Windows at the kernel level.”

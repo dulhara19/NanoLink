@@ -5,6 +5,22 @@ This document is written so you can paste it into **ChatGPT Study Mode** and ask
 ## 1) What you built (one sentence)
 Two Windows processes exchange **variable-size sensor messages** through a **shared-memory** region using a **lock-free SPSC (single-producer / single-consumer) ring buffer** with a **two-phase commit** record format.
 
+## 1.1) Recommended learning path (Study Mode)
+If you’re using ChatGPT Study Mode, this order tends to click fastest:
+
+1. **Dataflow + memory layout**: what bytes exist where (header vs ring).
+2. **Ring math**: power-of-two masking, monotonic counters, wrap marker.
+3. **Correctness**: two-phase commit and the invariants that keep it safe.
+4. **Memory ordering**: what acquire/release prevents, and why `Volatile` matters.
+5. **Performance**: cache lines, false sharing, busy-wait vs blocking, GC pressure.
+
+### Quick checklist (things you should be able to explain)
+- What is a `MemoryMappedFile` and what does it mean to “map a view”?
+- Why is capacity a power of two, and how does `offset = x & (cap-1)` work?
+- What does “SPSC” buy you compared to MPMC?
+- What does the negative `Length` mean, and why is it safe?
+- What’s the difference between “commit record” and “publish head”?
+
 ## 2) When to use this pattern
 - **Low latency** IPC on the same machine (no kernel crossings per message after setup)
 - **High throughput** streaming: sensors, telemetry, audio frames, trading feeds, robotics
